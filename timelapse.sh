@@ -1,11 +1,11 @@
 #!/bin/bash
 
-SAVE_PATH='~/Pictures/timelapse/testing/'
+SAVE_PATH=$HOME'/Pictures/timelapse/testing/'
 SAVE_EXT='.jpg'
 CAPTURE_CMD='fswebcam'
 
 function capture {
-    $CAPTURE_CMD $SAVE_PATH$($1)$SAVE_EXT
+    $(echo "$CAPTURE_CMD $SAVE_PATH$($1)$SAVE_EXT")
 }
 
 while true

@@ -1,37 +1,31 @@
 #!/bin/bash
 
-SAVE_PATH=$HOME'/Pictures/timelapse/testing/'
+SAVE_PATH_LOCAL='imgs/'
+SAVE_PATH_REMOTE='pictures/timelapse/testing/'
 SAVE_EXT='.jpg'
 CAPTURE_CMD='fswebcam'
+DELAY='5s'
 
 function capture {
-    $(echo "$CAPTURE_CMD $SAVE_PATH$($1)$SAVE_EXT")
+    $CAPTURE_CMD $1
 }
 
 while true
 do
 
+    # generate image named based on epoch time
+    FILENAME=$(date +%s)$SAVE_EXT
+
     # take the picture
-    capture 'date +%s'
+    capture $SAVE_PATH_LOCAL$FILENAME
 
     # wait
-    sleep 1s
+    sleep $DELAY
 
     # push the file to dropbox
-    #db.py put ~/Pictures/timelapse/testing/$(date +%s).jpg Pictures/timelapse/testing/$(date +%s).jpg
+    python db.py put $SAVE_PATH_LOCAL$FILENAME $SAVE_PATH_REMOTE$FILENAME
 
-    # wait for the file to show up in dropbox before continuing
-    #while [true]
-    #do
-        #foo=$(db.py search Pictures/timelapse/testing/$(date +%s).jpg)
-        #if [[ foo -eq 'true' ]]; then
-            #statements
-        #fi
-        #sleep 1s
-    #done
-
-    # delete the file
-    #rm ~/Pictures/timelapse/testing/$(date +%s).jpg
+    # delete the local file
+    rm $SAVE_PATH_LOCAL$FILENAME
 
 done
-

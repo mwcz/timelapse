@@ -11,24 +11,24 @@ from dropbox import client, rest
 
 # XXX Fill in your consumer key and secret below
 # You can find these at http://www.dropbox.com/developers/apps
-APP_KEY = '$(cat app_key)'
-APP_SECRET = '$(cat app_secret)'
+APP_KEY = open('app_key').readline()
+APP_SECRET = open('app_secret').readline()
 
 def command(login_required=True):
     """a decorator for handling authentication and exceptions"""
     def decorate(f):
         def wrapper(self, args):
             if login_required and self.api_client is None:
-                self.stdout.write("Please 'login' to execute this command\n")
+                print("Please 'login' to execute this command\n")
                 return
 
             try:
                 return f(self, *args)
             except TypeError, e:
-                self.stdout.write(str(e) + '\n')
+                print(str(e) + '\n')
             except rest.ErrorResponse, e:
                 msg = e.user_error_msg or str(e)
-                self.stdout.write('Error: %s\n' % msg)
+                print('Error: %s\n' % msg)
 
         wrapper.__doc__ = f.__doc__
         return wrapper
@@ -52,18 +52,15 @@ class DropboxTerm():
         cmd_names.sort()
         self.parser.add_argument('command', action='store', choices=cmd_names)
         self.parser.add_argument('args', action='store', nargs='*')
-        args = self.parser.parse_args()
-
-        # TODO remove
-        pprint.pprint(args)
+        cmd_args = self.parser.parse_args()
 
         self.api_client = None
         try:
             token = open(self.TOKEN_FILE).read()
             self.api_client = client.DropboxClient(token)
-            print "[loaded access token]"
 
-            #getattr(self, 'do_' + args.command).__func__(*args.args)
+            # find and execute the desired command
+            getattr(self, 'do_' + cmd_args.command)(cmd_args.args)
         except IOError:
             pass # don't worry if it's not there
 
@@ -76,7 +73,7 @@ class DropboxTerm():
             for f in resp['contents']:
                 name = os.path.basename(f['path'])
                 encoding = locale.getdefaultlocale()[1]
-                self.stdout.write(('%s\n' % name).encode(encoding))
+                print(('%s\n' % name).encode(encoding))
 
     @command()
     def do_cd(self, path):
@@ -91,15 +88,15 @@ class DropboxTerm():
         """log in to a Dropbox account"""
         flow = client.DropboxOAuth2FlowNoRedirect(self.app_key, self.app_secret)
         authorize_url = flow.start()
-        sys.stdout.write("1. Go to: " + authorize_url + "\n")
-        sys.stdout.write("2. Click \"Allow\" (you might have to log in first).\n")
-        sys.stdout.write("3. Copy the authorization code.\n")
+        print("1. Go to: " + authorize_url + "\n")
+        print("2. Click \"Allow\" (you might have to log in first).\n")
+        print("3. Copy the authorization code.\n")
         code = raw_input("Enter the authorization code here: ").strip()
 
         try:
             access_token, user_id = flow.finish(code)
         except rest.ErrorResponse, e:
-            self.stdout.write('Error: %s\n' % str(e))
+            print('Error: %s\n' % str(e))
             return
 
         with open(self.TOKEN_FILE, 'w') as f:
@@ -117,8 +114,8 @@ class DropboxTerm():
     def do_cat(self, path):
         """display the contents of a file"""
         f, metadata = self.api_client.get_file_and_metadata(self.current_path + "/" + path)
-        self.stdout.write(f.read())
-        self.stdout.write("\n")
+        print(f.read())
+        print("\n")
 
     @command()
     def do_mkdir(self, path):
@@ -198,14 +195,14 @@ class DropboxTerm():
         """Search Dropbox for filenames containing the given string."""
         results = self.api_client.search(self.current_path, string)
         for r in results:
-            self.stdout.write("%s\n" % r['path'])
+            print("%s\n" % r['path'])
 
     # the following are for command line magic and aren't Dropbox-related
     def emptyline(self):
         pass
 
     def do_EOF(self, line):
-        self.stdout.write('\n')
+        print('\n')
         return True
 
     def parseline(self, line):

@@ -1,11 +1,9 @@
 #!/bin/bash
 
 SERIES_NAME=$1
-SAVE_PATH_LOCAL='imgs/'
-SAVE_PATH_REMOTE='pictures/timelapse/'$SERIES_NAME'/'
-SAVE_EXT='.jpg'
-DELAY='5s'
-source capture.sh # pull in $CAPTURE_CMD
+source capture.sh # pull in capture settings
+
+mkdir -p $SAVE_PATH_LOCAL
 
 function capture {
     $CAPTURE_CMD $1

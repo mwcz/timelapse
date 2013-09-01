@@ -1,0 +1,2 @@
+This directory holds images that are staged for uploading to Dropbox, but haven't been uploaded yet.  If you see images in this dir after running a timelapse series, odds are very good they weren't pushed to dropbox before you ended the timelapse series.
+

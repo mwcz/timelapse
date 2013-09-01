@@ -4,8 +4,8 @@ SERIES_NAME=$1
 SAVE_PATH_LOCAL='imgs/'
 SAVE_PATH_REMOTE='pictures/timelapse/'$SERIES_NAME'/'
 SAVE_EXT='.jpg'
-CAPTURE_CMD='fswebcam'
 DELAY='5s'
+source capture.sh # pull in $CAPTURE_CMD
 
 function capture {
     $CAPTURE_CMD $1
